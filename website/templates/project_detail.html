@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ projet.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 md:p-12">
+    <a href="{% url 'project_list' %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour à la liste
+    </a>
+
+    <div class="rounded-box card-accent">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-extrabold">{{ projet.title }}</h1>
+                <p class="text-sm text-[var(--color-muted)] mt-1">
+                    Soumis par {{ projet.student.get_full_name|default:projet.student.email }}
+                    le {{ projet.created_at|date:"d/m/Y" }}
+                </p>
+            </div>
+            <span class="text-sm px-3 py-1 rounded-full font-semibold whitespace-nowrap self-start
+                {% if projet.status == 'VALIDATED' %}bg-green-100 text-green-700
+                {% elif projet.status == 'REJECTED' %}bg-red-100 text-red-700
+                {% elif projet.status == 'SUBMITTED' %}bg-blue-100 text-blue-700
+                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                {{ projet.get_status_display }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+            <div>
+                <span class="text-[var(--color-muted)]">Filière :</span>
+                <span class="font-medium ml-2">{{ projet.get_filiere_display }}</span>
+            </div>
+            {% if projet.submitted_at %}
+            <div>
+                <span class="text-[var(--color-muted)]">Soumis le :</span>
+                <span class="font-medium ml-2">{{ projet.submitted_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% endif %}
+            {% if projet.validated_at %}
+            <div>
+                <span class="text-[var(--color-muted)]">Validé le :</span>
+                <span class="font-medium ml-2">{{ projet.validated_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% endif %}
+            {% if projet.validated_by %}
+            <div>
+                <span class="text-[var(--color-muted)]">Validé par :</span>
+                <span class="font-medium ml-2">{{ projet.validated_by.get_full_name }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-lg font-bold mb-2">Description</h2>
+            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ projet.description }}</p>
+        </div>
+
+        {% if projet.team_members %}
+        <div class="mb-6">
+            <h2 class="text-lg font-bold mb-2">Membres de l'équipe</h2>
+            <ul class="list-disc list-inside text-sm">
+                {% for member in team_members_display %}
+                    <li>{{ member.name }}</li>
+                {% empty %}
+                    <li class="text-[var(--color-muted)]">Aucun membre supplémentaire</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if projet.document %}
+        <div class="mb-6">
+            <h2 class="text-lg font-bold mb-2">Document</h2>
+            <a href="{{ projet.document.url }}" target="_blank"
+               class="text-[var(--color-accent)] hover:underline text-sm">
+                Télécharger le document
+            </a>
+        </div>
+        {% endif %}
+
+        {% if projet.rejection_reason %}
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h2 class="text-lg font-bold text-red-700 mb-1">Motif du rejet</h2>
+            <p class="text-sm text-red-600">{{ projet.rejection_reason }}</p>
+        </div>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-3 mt-8 pt-6 border-t border-[var(--color-border)]">
+            {% if can_edit %}
+                <a href="{% url 'project_edit' pk=projet.pk %}"
+                   class="px-4 py-2 border border-[var(--color-border)] rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors btn-pop">
+                    Modifier
+                </a>
+                {% if projet.status == 'DRAFT' %}
+                    <a href="{% url 'project_submit' pk=projet.pk %}"
+                       class="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-xl font-medium hover:opacity-90 transition-opacity btn-pop">
+                        Soumettre le projet
+                    </a>
+                {% endif %}
+            {% endif %}
+            {% if user.role == 'ADMIN' and projet.status == 'SUBMITTED' %}
+                <a href="{% url 'project_validate' pk=projet.pk %}"
+                   class="px-4 py-2 bg-green-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity btn-pop">
+                    Valider / Rejeter
+                </a>
+            {% endif %}
+            {% if user.role == 'ADMIN' %}
+                <a href="{% url 'project_delete' pk=projet.pk %}"
+                   class="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity btn-pop">
+                    Supprimer
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

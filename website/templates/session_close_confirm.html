@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 md:p-12">
+    <a href="{% url 'session_detail' pk=session.pk %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour à la session
+    </a>
+
+    <div class="card-drip shadow-xl w-full max-w-3xl">
+        <div class="card-drip-body">
+        <h1 class="text-2xl font-extrabold mb-2">Fermer la session</h1>
+        <p class="text-xl font-bold mb-4">{{ session.nom }}</p>
+
+        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+            <div class="p-4 border border-[var(--color-border)] rounded-lg">
+                <div class="text-2xl font-bold text-green-600">{{ jury_votes_count }}</div>
+                <div class="text-xs text-[var(--color-muted)]">Jurys ayant voté</div>
+            </div>
+            <div class="p-4 border border-[var(--color-border)] rounded-lg">
+                <div class="text-2xl font-bold">{{ total_votes }}</div>
+                <div class="text-xs text-[var(--color-muted)]">Votes totaux</div>
+            </div>
+            <div class="p-4 border border-[var(--color-border)] rounded-lg">
+                <div class="text-2xl font-bold">{{ projets_count }}</div>
+                <div class="text-xs text-[var(--color-muted)]">Projets notés</div>
+            </div>
+        </div>
+
+        <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-6 text-sm">
+            <p class="font-semibold text-yellow-800">⚠️ Action irréversible</p>
+            <p class="text-yellow-700 mt-1">
+                Une fois la session fermée :
+            </p>
+            <ul class="list-disc list-inside text-yellow-700 mt-1">
+                <li>Les jurys ne pourront plus voter ou modifier leurs votes</li>
+                <li>Les résultats finaux seront calculés automatiquement</li>
+                <li>Le président du jury pourra valider et publier les résultats</li>
+            </ul>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="flex-1 bg-orange-600 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                    Confirmer la fermeture
+                </button>
+                <a href="{% url 'session_detail' pk=session.pk %}"
+                   class="px-6 py-3 border border-[var(--color-border)] rounded-xl font-bold hover:bg-[var(--color-secondary)] transition-colors">
+                    Annuler
+                </a>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

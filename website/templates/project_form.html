@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 md:p-12">
+    <div class="card-drip shadow-xl w-full max-w-2xl">
+        <div class="card-drip-header">
+            <h1 class="text-2xl font-extrabold text-center">{{ title }}</h1>
+        </div>
+        <div class="card-drip-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">{{ form.non_field_errors|join:", " }}</div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-semibold mb-1">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<div class="text-red-500 text-xs mt-1">{{ form.title.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-semibold mb-1">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="text-red-500 text-xs mt-1">{{ form.description.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.filiere.id_for_label }}" class="block text-sm font-semibold mb-1">{{ form.filiere.label }}</label>
+                    {{ form.filiere }}
+                    {% if form.filiere.errors %}<div class="text-red-500 text-xs mt-1">{{ form.filiere.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.team_members.id_for_label }}" class="block text-sm font-semibold mb-1">{{ form.team_members.label }}</label>
+                    {{ form.team_members }}
+                    <p class="text-xs text-[var(--color-muted)] mt-1">Recherchez et sélectionnez des étudiants (max 4, vous êtes déjà compté).</p>
+                    {% if form.team_members.errors %}<div class="text-red-500 text-xs mt-1">{{ form.team_members.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.document.id_for_label }}" class="block text-sm font-semibold mb-1">{{ form.document.label }}</label>
+                    {{ form.document }}
+                    {% if form.document.errors %}<div class="text-red-500 text-xs mt-1">{{ form.document.errors|join:", " }}</div>{% endif %}
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="submit"
+                            class="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                        {{ submit_label }}
+                    </button>
+                    <a href="{% if projet %}{% url 'project_detail' pk=projet.pk %}{% else %}{% url 'project_list' %}{% endif %}"
+                       class="px-6 py-3 border border-[var(--color-border)] rounded-xl font-bold hover:bg-[var(--color-secondary)] transition-colors text-center">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

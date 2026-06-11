@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 md:p-12">
+    <h1 class="text-3xl font-extrabold mb-8 text-center">Résultats</h1>
+
+    {% if sessions %}
+        <form method="GET" class="max-w-md mx-auto mb-8">
+            <label for="session-select" class="block text-sm font-semibold mb-2">Sélectionnez une session :</label>
+            <select name="session" id="session-select" class="w-full px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+                <option value="">— Choisir une session —</option>
+                {% for s in sessions %}
+                    <option value="{{ s.pk }}" {% if selected_session.pk == s.pk %}selected{% endif %}>
+                        {{ s.nom }} — {{ s.get_filiere_display }}
+                    </option>
+                {% endfor %}
+            </select>
+            <noscript><button type="submit" class="mt-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg">Voir</button></noscript>
+        </form>
+
+        {% if resultats %}
+            <div class="rounded-box card-accent">
+                <h2 class="text-xl font-bold mb-2">{{ selected_session.nom }}</h2>
+                <p class="text-sm text-[var(--color-muted)] mb-6">{{ selected_session.get_filiere_display }}</p>
+
+                <div class="space-y-2">
+                    {% for r in resultats %}
+                        <div class="flex items-center justify-between p-4 border border-[var(--color-border)] rounded-lg {% if r.rang == 1 %}bg-yellow-50 border-yellow-300{% endif %}">
+                            <div class="flex items-center gap-4">
+                                <div class="text-2xl font-extrabold {% if r.rang == 1 %}text-yellow-600{% elif r.rang == 2 %}text-gray-500{% elif r.rang == 3 %}text-orange-600{% endif %}">
+                                    #{{ r.rang }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold">{{ r.projet.title }}</p>
+                                    <p class="text-sm text-[var(--color-muted)]">
+                                        {{ r.projet.student.get_full_name|default:r.projet.student.email }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-xl font-bold">{{ r.score_final }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% elif selected_session %}
+            <div class="rounded-box card-accent text-center py-8">
+                <p class="text-[var(--color-muted)]">Aucun résultat disponible pour cette session.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="rounded-box card-accent text-center py-12">
+            <h2 class="text-xl font-bold mb-2">Aucun résultat publié</h2>
+            <p class="text-[var(--color-muted)]">Les résultats seront affichés ici une fois publiés par le président du jury.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh] p-4">
+    <div class="card-drip shadow-xl w-full max-w-sm">
+        <div class="card-drip-header">
+            <h2 class="text-3xl font-extrabold text-center">Connexion</h2>
+            <p class="text-center text-sm opacity-90">Connectez-vous à Jurify</p>
+        </div>
+        <div class="card-drip-body">
+            <form method="POST">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+                        {{ form.non_field_errors|join:", " }}
+                    </div>
+                {% endif %}
+                <div class="mb-4">
+                    <label for="id_email" class="block text-sm font-semibold mb-1">Adresse e-mail</label>
+                    {{ form.email }}
+                </div>
+                <div class="mb-4">
+                    <label for="id_password" class="block text-sm font-semibold mb-1">Mot de passe</label>
+                    {{ form.password }}
+                </div>
+                <button type="submit" class="w-full mt-4 bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                    Se connecter
+                </button>
+                <div class="text-right mt-2 text-xs">
+                    <a href="{% url 'password_reset' %}" class="text-[var(--color-muted)] hover:underline">Mot de passe oublié ?</a>
+                </div>
+            </form>
+            <div class="text-center mt-6 text-sm">
+                <p class="text-[var(--color-muted)]">
+                    Pas encore de compte ?
+                    <a href="{% url 'register' %}" class="font-bold text-[var(--color-accent)] hover:underline">S'inscrire</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

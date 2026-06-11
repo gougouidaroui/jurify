@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">Notifications</h1>
+
+    {% if notifications %}
+        <div class="space-y-3">
+            {% for notif in notifications %}
+                <div class="{% if not notif.lu %}p-4 rounded-lg border card-accent bg-[var(--color-primary)]/5{% else %}p-4 rounded-lg border card-accent{% endif %}">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-sm mb-1">{{ notif.get_type_display }}</p>
+                            <p class="text-sm text-[var(--color-muted)]">{{ notif.message }}</p>
+                            <p class="text-xs text-[var(--color-muted)] mt-1">{{ notif.created_at|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        {% if notif.lien %}
+                            <a href="{{ notif.lien }}" class="shrink-0 text-sm text-[var(--color-primary)] hover:underline font-medium">
+                                Voir
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12 text-[var(--color-muted)]">
+            <p>Aucune notification.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

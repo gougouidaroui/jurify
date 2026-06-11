@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6 md:p-12">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+            <div class="page-heading-drip"></div>
+            <h1 class="text-3xl font-extrabold mt-2">{{ title }}</h1>
+        </div>
+        {% if user.role == 'ADMIN' %}
+            <a href="{% url 'session_create' %}"
+               class="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-2 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop text-center">
+                + Nouvelle session
+            </a>
+        {% endif %}
+    </div>
+
+    <form method="GET" class="flex flex-wrap gap-3 mb-6">
+        <select name="filiere" class="px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+            <option value="">Toutes les filières</option>
+            {% for code, label in projet_model.Filiere.choices %}
+                <option value="{{ code }}" {% if current_filiere == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="status" class="px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+            <option value="">Tous les statuts</option>
+            {% for code, label in session_vote.Status.choices %}
+                <option value="{{ code }}" {% if current_status == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-lg font-semibold hover:opacity-90 btn-pop">
+            Filtrer
+        </button>
+    </form>
+
+    {% if sessions %}
+        <div class="grid gap-4">
+            {% for session in sessions %}
+                {% if user.role == 'ADMIN' %}
+                <a href="{% url 'session_detail' pk=session.pk %}"
+                   class="rounded-box card-accent card-lift block">
+                {% else %}
+                <div class="rounded-box card-accent">
+                {% endif %}
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold">{{ session.nom }}</h3>
+                            <p class="text-sm text-[var(--color-muted)]">
+                                {{ session.get_filiere_display }} — {{ session.date_debut|date:"d/m/Y" }} au {{ session.date_fin|date:"d/m/Y" }}
+                            </p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="text-xs px-2 py-1 rounded-full
+                                    {% if session.status == 'OPEN' %}bg-green-100 text-green-700
+                                    {% elif session.status == 'CLOSED' %}bg-orange-100 text-orange-700
+                                    {% elif session.status == 'PUBLISHED' %}bg-blue-100 text-blue-700
+                                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ session.get_status_display }}
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-[var(--color-border)]">
+                                    {{ session.jury.count }} jury(s)
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-[var(--color-border)]">
+                                    {{ session.projets.count }} projet(s)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-right text-sm text-[var(--color-muted)] whitespace-nowrap">
+                            {{ session.created_at|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                {% if user.role == 'ADMIN' %}
+                </a>
+                {% else %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-box card-accent text-center py-12">
+            <p class="text-[var(--color-muted)] text-lg">Aucune session de vote trouvée.</p>
+            {% if user.role == 'ADMIN' %}
+                <a href="{% url 'session_create' %}" class="text-[var(--color-accent)] hover:underline font-medium mt-2 inline-block">
+                    Créer une session
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

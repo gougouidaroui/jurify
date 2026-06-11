@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 md:p-12">
+    <a href="{% url 'voting_dashboard' %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour au tableau de vote
+    </a>
+
+    <div class="card-drip shadow-xl w-full max-w-2xl">
+        <div class="card-drip-header">
+            <h1 class="text-2xl font-extrabold text-center">{{ projet.title }}</h1>
+            <p class="text-center text-sm opacity-90">
+                Session : {{ session.nom }} — {{ projet.student.get_full_name|default:projet.student.email }}
+            </p>
+            {% if existing_vote %}
+                <p class="text-center text-sm text-blue-600 mt-1">
+                    Dernière note : {{ existing_vote.score_total }} — Modifié le {{ existing_vote.modified_at|date:"d/m/Y H:i" }}
+                </p>
+            {% endif %}
+        </div>
+        <div class="card-drip-body">
+            <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+                <p class="font-semibold mb-1">Description du projet :</p>
+                <p class="text-[var(--color-muted)] whitespace-pre-wrap">{{ projet.description|truncatewords:80 }}</p>
+                {% if projet.document %}
+                    <a href="{{ projet.document.url }}" target="_blank"
+                       class="text-[var(--color-accent)] hover:underline mt-2 inline-block">
+                        📄 Télécharger le document
+                    </a>
+                {% endif %}
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">{{ form.non_field_errors|join:", " }}</div>
+                {% endif %}
+
+                <h2 class="text-lg font-bold mb-4">Critères d'évaluation</h2>
+
+                {% for field in form %}
+                    {% if field.name != 'commentaire' %}
+                    <div class="mb-4 p-4 border border-[var(--color-border)] rounded-lg">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-semibold mb-1">{{ field.label }}</label>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">{{ field }}</div>
+                            <span class="text-sm text-[var(--color-muted)] whitespace-nowrap">{{ field.help_text }}</span>
+                        </div>
+                        {% if field.errors %}
+                            <div class="text-red-500 text-xs mt-1">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                <div class="mb-6">
+                    <label for="{{ form.commentaire.id_for_label }}" class="block text-sm font-semibold mb-1">
+                        {{ form.commentaire.label }}
+                    </label>
+                    {{ form.commentaire }}
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit"
+                            class="flex-1 bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                        {% if existing_vote %}Modifier le vote{% else %}Valider le vote{% endif %}
+                    </button>
+                    <a href="{% url 'voting_dashboard' %}"
+                       class="px-6 py-3 border border-[var(--color-border)] rounded-xl font-bold hover:bg-[var(--color-secondary)] transition-colors text-center">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

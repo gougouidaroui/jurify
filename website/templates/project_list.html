@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6 md:p-12">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+            <div class="page-heading-drip"></div>
+            <h1 class="text-3xl font-extrabold mt-2">{{ title }}</h1>
+        </div>
+        {% if user.role == 'STUDENT' %}
+            <a href="{% url 'project_create' %}"
+               class="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-2 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop text-center">
+                + Nouveau projet
+            </a>
+        {% endif %}
+    </div>
+
+    <form method="GET" class="flex flex-wrap gap-3 mb-6">
+        <input type="text" name="search" placeholder="Rechercher par titre..."
+               value="{{ request.GET.search }}"
+               class="px-4 py-2 border rounded-lg flex-1 min-w-[200px]">
+        <select name="filiere" class="px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+            <option value="">Toutes les filières</option>
+            {% for code, label in projet_model.Filiere.choices %}
+                <option value="{{ code }}" {% if current_filiere == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="status" class="px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+            <option value="">Tous les statuts</option>
+            {% for code, label in projet_model.Status.choices %}
+                <option value="{{ code }}" {% if current_status == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-lg font-semibold hover:opacity-90 btn-pop">
+            Filtrer
+        </button>
+    </form>
+
+    {% if projets %}
+        <div class="grid gap-4">
+            {% for projet in projets %}
+                <a href="{% url 'project_detail' pk=projet.pk %}"
+                   class="rounded-box card-accent card-lift block">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold">{{ projet.title }}</h3>
+                            <p class="text-sm text-[var(--color-muted)] mt-1">
+                                {{ projet.description|truncatewords:30 }}
+                            </p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="text-xs px-2 py-1 rounded-full bg-[var(--color-border)]">
+                                    {{ projet.get_filiere_display }}
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full
+                                    {% if projet.status == 'VALIDATED' %}bg-green-100 text-green-700
+                                    {% elif projet.status == 'REJECTED' %}bg-red-100 text-red-700
+                                    {% elif projet.status == 'SUBMITTED' %}bg-blue-100 text-blue-700
+                                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                    {{ projet.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-right text-sm text-[var(--color-muted)] whitespace-nowrap">
+                            {{ projet.created_at|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-box card-accent text-center py-12">
+            <p class="text-[var(--color-muted)] text-lg">Aucun projet trouvé.</p>
+            {% if user.role == 'STUDENT' %}
+                <a href="{% url 'project_create' %}" class="text-[var(--color-accent)] hover:underline font-medium mt-2 inline-block">
+                    Créer votre premier projet
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

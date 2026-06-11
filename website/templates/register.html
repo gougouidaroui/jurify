@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh] p-4">
+    <div class="card-drip shadow-xl w-full max-w-md">
+        <div class="card-drip-header">
+            <h2 class="text-3xl font-extrabold text-center">Inscription</h2>
+            <p class="text-center text-sm opacity-90">Créez votre compte étudiant</p>
+        </div>
+        <div class="card-drip-body">
+            <form method="POST">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+                        {{ form.non_field_errors|join:", " }}
+                    </div>
+                {% endif %}
+                {% for field in form %}
+                    <div class="mb-4">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-semibold mb-1">
+                            {% if field.name == 'email' %}Adresse e-mail
+                            {% elif field.name == 'username' %}Nom d'utilisateur
+                            {% elif field.name == 'first_name' %}Prénom
+                            {% elif field.name == 'last_name' %}Nom
+                            {% elif field.name == 'password1' %}Mot de passe
+                            {% elif field.name == 'password2' %}Confirmer le mot de passe
+                            {% else %}{{ field.label }}{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-red-500 text-xs mt-1">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="w-full mt-4 bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                    S'inscrire
+                </button>
+            </form>
+            <div class="text-center mt-6 text-sm">
+                <p class="text-[var(--color-muted)]">
+                    Déjà un compte ?
+                    <a href="{% url 'login' %}" class="font-bold text-[var(--color-accent)] hover:underline">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

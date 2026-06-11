@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto p-6 md:p-12">
+    <a href="{% url 'session_detail' pk=session.pk %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour à la session
+    </a>
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold">{{ session.nom }}</h1>
+            <p class="text-sm text-[var(--color-muted)]">
+                {{ session.get_filiere_display }} — Statut : {{ session.get_status_display }}
+            </p>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+            {% if user.role == 'PRESIDENT_JURY' or user.role == 'ADMIN' %}
+                {% if session.status == 'CLOSED' %}
+                    <a href="{% url 'session_publish' pk=session.pk %}"
+                       class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold hover:opacity-90 transition-opacity text-sm btn-pop">
+                        Publier les résultats
+                    </a>
+                {% endif %}
+                <a href="{% url 'report_pdf' pk=session.pk %}"
+                   class="px-4 py-2 border border-[var(--color-border)] rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors text-sm btn-pop">
+                    📄 Exporter PDF
+                </a>
+                <a href="{% url 'report_csv' pk=session.pk %}"
+                   class="px-4 py-2 border border-[var(--color-border)] rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors text-sm btn-pop">
+                    📊 Exporter CSV
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if mon_resultat %}
+        <div class="rounded-box card-accent mb-6 border-2 border-[var(--color-accent)]">
+            <h2 class="text-lg font-bold mb-2">📊 Mon résultat</h2>
+            <div class="flex items-center gap-4">
+                <div class="text-3xl font-extrabold text-[var(--color-primary)]">
+                    #{{ mon_resultat.rang }}
+                </div>
+                <div>
+                    <p class="font-bold">{{ mon_resultat.projet.title }}</p>
+                    <p class="text-sm text-[var(--color-muted)]">Score : {{ mon_resultat.score_final }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if resultats %}
+        <div class="rounded-box card-accent">
+            <h2 class="text-xl font-bold mb-4">Classement final</h2>
+            <div class="space-y-2">
+                {% for resultat in resultats %}
+                    <div class="flex items-center justify-between p-4 border border-[var(--color-border)] rounded-lg {% if forloop.counter == 1 %}bg-yellow-50 border-yellow-300{% endif %}">
+                        <div class="flex items-center gap-4">
+                            <div class="text-2xl font-extrabold {% if forloop.counter == 1 %}text-yellow-600{% elif forloop.counter == 2 %}text-gray-500{% elif forloop.counter == 3 %}text-orange-600{% endif %}">
+                                #{{ resultat.rang }}
+                            </div>
+                            <div>
+                                <p class="font-semibold">{{ resultat.projet.title }}</p>
+                                <p class="text-sm text-[var(--color-muted)]">
+                                    {{ resultat.projet.student.get_full_name|default:resultat.projet.student.email }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold">{{ resultat.score_final }}</div>
+                            <div class="text-xs text-[var(--color-muted)]">Score final</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if votes_details and user.role != 'STUDENT' %}
+            <div class="rounded-box card-accent mt-6">
+                <h2 class="text-xl font-bold mb-4">Détail des votes</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-[var(--color-border)]">
+                                <th class="text-left py-2 pr-4">Projet</th>
+                                <th class="text-left py-2 pr-4">Jury</th>
+                                {% for critere in session.criteres.all %}
+                                    <th class="text-right py-2 pr-4">{{ critere.nom }}</th>
+                                {% endfor %}
+                                <th class="text-right py-2">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vote in votes_details %}
+                                <tr class="border-b border-[var(--color-border)]">
+                                    <td class="py-2 pr-4">{{ vote.projet.title }}</td>
+                                    <td class="py-2 pr-4">{{ vote.jury.get_full_name|default:vote.jury.email }}</td>
+                                    {% for critere in session.criteres.all %}
+                                        <td class="text-right py-2 pr-4">
+                                            {% for note in vote.notes.all %}
+                                                {% if note.critere_id == critere.pk %}{{ note.note }}{% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    {% endfor %}
+                                    <td class="text-right py-2 font-semibold">{{ vote.score_total }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="rounded-box card-accent text-center py-12">
+            <p class="text-lg text-[var(--color-muted)]">Aucun résultat disponible pour cette session.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

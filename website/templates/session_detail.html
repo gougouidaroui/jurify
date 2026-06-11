@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ session.nom }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 md:p-12">
+    <a href="{% url 'session_list' %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour aux sessions
+    </a>
+
+    <div class="rounded-box card-accent">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-extrabold">{{ session.nom }}</h1>
+                <p class="text-sm text-[var(--color-muted)] mt-1">
+                    Créée par {{ session.created_by.get_full_name|default:session.created_by.email }}
+                    le {{ session.created_at|date:"d/m/Y" }}
+                </p>
+            </div>
+            <span class="text-sm px-3 py-1 rounded-full font-semibold whitespace-nowrap self-start
+                {% if session.status == 'OPEN' %}bg-green-100 text-green-700
+                {% elif session.status == 'CLOSED' %}bg-orange-100 text-orange-700
+                {% elif session.status == 'PUBLISHED' %}bg-blue-100 text-blue-700
+                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                {{ session.get_status_display }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+            <div>
+                <span class="text-[var(--color-muted)]">Filière :</span>
+                <span class="font-medium ml-2">{{ session.get_filiere_display }}</span>
+            </div>
+            <div>
+                <span class="text-[var(--color-muted)]">Date de début :</span>
+                <span class="font-medium ml-2">{{ session.date_debut|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div>
+                <span class="text-[var(--color-muted)]">Date de fin :</span>
+                <span class="font-medium ml-2">{{ session.date_fin|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% if session.closed_at %}
+            <div>
+                <span class="text-[var(--color-muted)]">Fermée le :</span>
+                <span class="font-medium ml-2">{{ session.closed_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% endif %}
+            {% if session.published_at %}
+            <div>
+                <span class="text-[var(--color-muted)]">Publiée le :</span>
+                <span class="font-medium ml-2">{{ session.published_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if user.role == 'ADMIN' or user.role == 'PRESIDENT_JURY' %}
+            <div class="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h2 class="text-lg font-bold mb-3">Configuration</h2>
+                <div class="flex flex-wrap gap-3">
+                    {% if user.role == 'ADMIN' %}
+                        <a href="{% url 'session_criteria' pk=session.pk %}" class="px-4 py-2 border border-[var(--color-border)] rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors text-sm btn-pop">
+                            {% if session.criteres.exists %}Modifier les critères{% else %}Configurer les critères{% endif %}
+                        </a>
+                        <a href="{% url 'session_assign_jury' pk=session.pk %}" class="px-4 py-2 border border-[var(--color-border)] rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors text-sm btn-pop">
+                            {% if session.jury.exists %}Modifier les jurys{% else %}Affecter les jurys{% endif %}
+                        </a>
+                        <a href="{% url 'session_assign_projets' pk=session.pk %}" class="px-4 py-2 border border-[var(--color-border)] rounded-xl font-medium hover:bg-[var(--color-secondary)] transition-colors text-sm btn-pop">
+                            {% if session.projets.exists %}Modifier les projets{% else %}Affecter les projets{% endif %}
+                        </a>
+                        {% if session.status == 'PLANNED' %}
+                            <a href="{% url 'session_open' pk=session.pk %}" class="px-4 py-2 bg-green-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm btn-pop">
+                                Ouvrir la session
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                    {% if session.status == 'OPEN' %}
+                        <a href="{% url 'session_close' pk=session.pk %}" class="px-4 py-2 bg-orange-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm btn-pop">
+                            Fermer la session
+                        </a>
+                    {% endif %}
+                    {% if session.status == 'CLOSED' or session.status == 'PUBLISHED' %}
+                        <a href="{% url 'session_results' pk=session.pk %}" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm btn-pop">
+                            Voir les résultats
+                        </a>
+                    {% endif %}
+                    {% if session.status == 'CLOSED' %}
+                        <a href="{% url 'session_publish' pk=session.pk %}" class="px-4 py-2 bg-green-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity text-sm btn-pop">
+                            Publier les résultats
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="p-4 border border-[var(--color-border)] rounded-lg">
+                <h3 class="font-bold text-sm text-[var(--color-muted)] mb-2">CRITÈRES</h3>
+                {% if session.criteres.exists %}
+                    <ul class="text-sm space-y-1">
+                        {% for critere in session.criteres.all %}
+                            <li class="flex justify-between">
+                                <span>{{ critere.nom }}</span>
+                                <span class="font-medium">{{ critere.poids }}%</span>
+                            </li>
+                        {% endfor %}
+                        <li class="flex justify-between pt-1 border-t border-[var(--color-border)] font-bold">
+                            <span>Total</span>
+                            <span>{{ session.poids_total }}%</span>
+                        </li>
+                    </ul>
+                {% else %}
+                    <p class="text-sm text-[var(--color-muted)]">Aucun critère configuré.</p>
+                {% endif %}
+            </div>
+
+            <div class="p-4 border border-[var(--color-border)] rounded-lg">
+                <h3 class="font-bold text-sm text-[var(--color-muted)] mb-2">JURY ({{ session.jury.count }})</h3>
+                {% if session.jury.exists %}
+                    <ul class="text-sm space-y-1">
+                        {% for membre in session.jury.all %}
+                            <li>{{ membre.get_full_name|default:membre.email }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-sm text-[var(--color-muted)]">Aucun jury affecté.</p>
+                {% endif %}
+            </div>
+
+            <div class="p-4 border border-[var(--color-border)] rounded-lg">
+                <h3 class="font-bold text-sm text-[var(--color-muted)] mb-2">PROJETS ({{ session.projets.count }})</h3>
+                {% if session.projets.exists %}
+                    <ul class="text-sm space-y-1">
+                        {% for projet in session.projets.all %}
+                            <li>
+                                <a href="{% url 'project_detail' pk=projet.pk %}" class="text-[var(--color-accent)] hover:underline">
+                                    {{ projet.title }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-sm text-[var(--color-muted)]">Aucun projet affecté.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if session.status == 'OPEN' and user.role == 'JURY' or user.role == 'PRESIDENT_JURY' %}
+            <div class="mt-6">
+                <a href="#"
+                   class="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity inline-block btn-pop">
+                    Participer au vote
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

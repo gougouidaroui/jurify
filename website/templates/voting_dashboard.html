@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Voter{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6 md:p-12">
+    <div class="mb-8">
+        <div class="page-heading-drip"></div>
+        <h1 class="text-3xl font-extrabold mt-2">Voter</h1>
+    </div>
+
+    <form method="GET" class="flex flex-wrap gap-3 mb-6">
+        <select name="filiere" class="px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+            <option value="">Toutes les filières</option>
+            {% for code, label in projet_model.Filiere.choices %}
+                <option value="{{ code }}" {% if current_filiere == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="status" class="px-4 py-2 border rounded-lg" onchange="this.form.submit()">
+            <option value="">Tous les statuts</option>
+            {% for code, label in session_vote.Status.choices %}
+                <option value="{{ code }}" {% if current_status == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-lg font-semibold hover:opacity-90 btn-pop">
+            Filtrer
+        </button>
+    </form>
+
+    {% if active_sessions %}
+        <h2 class="text-xl font-bold mb-4">Sessions actives</h2>
+        <div class="grid gap-6">
+            {% for session in active_sessions %}
+                <div class="card-drip">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold">{{ session.nom }}</h3>
+                            <p class="text-base text-[var(--color-muted)]">
+                                {{ session.get_filiere_display }} — {{ session.date_debut|date:"d/m/Y H:i" }} au {{ session.date_fin|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                        <span class="text-sm px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-semibold whitespace-nowrap">
+                            {{ session.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="border-t border-[var(--color-border)] pt-4">
+                        <h4 class="font-semibold mb-3">Projets à évaluer :</h4>
+                        <div class="space-y-2">
+                            {% for projet in session.projets.all %}
+                                <div class="flex items-center justify-between p-3 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-secondary)] transition-colors">
+                                    <div class="flex-1">
+                                        <span class="font-medium">{{ projet.title }}</span>
+                                        <span class="text-base text-[var(--color-muted)] ml-2">— {{ projet.student.get_full_name|default:projet.student.email }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        {% if projet.user_vote %}
+                                            <span class="text-sm px-3 py-1.5 rounded-full bg-blue-100 text-blue-700">
+                                                Noté: {{ projet.user_vote.score_total }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-sm px-3 py-1.5 rounded-full bg-gray-100 text-gray-500">
+                                                Pas encore noté
+                                            </span>
+                                        {% endif %}
+                                        <a href="{% url 'vote_project' session_pk=session.pk projet_pk=projet.pk %}"
+                                           class="px-4 py-2 {% if projet.user_vote %}border border-[var(--color-border)]{% else %}bg-[var(--color-primary)] text-[var(--color-on-primary)]{% endif %} rounded-lg text-base font-medium hover:opacity-90 transition-opacity btn-pop">
+                                            {% if projet.user_vote %}Modifier{% else %}Voter{% endif %}
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-[var(--color-border)]">
+                        <a href="{% url 'vote_summary' session_pk=session.pk %}"
+                           class="text-base text-[var(--color-accent)] hover:underline font-medium">
+                            Voir le résumé de mes votes →
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-box card-accent text-center py-12 mb-8">
+            <p class="text-lg text-[var(--color-muted)]">Aucune session active pour le moment.</p>
+        </div>
+    {% endif %}
+
+    {% if voted_sessions %}
+        <h2 class="text-xl font-bold mt-10 mb-4">Sessions terminées</h2>
+        <div class="grid gap-4">
+            {% for session in voted_sessions %}
+                <a href="{% url 'vote_summary' session_pk=session.pk %}"
+                   class="rounded-box card-accent card-lift block">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-lg">{{ session.nom }}</h3>
+                            <p class="text-base text-[var(--color-muted)]">{{ session.get_filiere_display }}</p>
+                        </div>
+                        <span class="text-sm px-3 py-1.5 rounded-full
+                            {% if session.status == 'CLOSED' %}bg-orange-100 text-orange-700
+                            {% else %}bg-blue-100 text-blue-700{% endif %}">
+                            {{ session.get_status_display }}
+                        </span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

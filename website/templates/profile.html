@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 md:p-12">
+    <h1 class="text-3xl font-extrabold mb-8">Mon Profil</h1>
+
+    <div class="grid gap-8 md:grid-cols-2">
+        <div class="rounded-box card-accent">
+            <h2 class="text-xl font-bold mb-4">Informations personnelles</h2>
+            <form method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-4">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-semibold mb-1">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-red-500 text-xs mt-1">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-2 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                    Enregistrer
+                </button>
+            </form>
+            <div class="mt-6 pt-4 border-t border-[var(--color-border)]">
+                <a href="{% url 'password_change' %}" class="text-[var(--color-accent)] hover:underline font-medium">
+                    Changer mon mot de passe
+                </a>
+            </div>
+        </div>
+
+        <div class="rounded-box card-accent">
+            <h2 class="text-xl font-bold mb-4">Compte</h2>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <span class="text-[var(--color-muted)]">Email :</span>
+                    <span class="font-medium">{{ user.email }}</span>
+                </div>
+                <div>
+                    <span class="text-[var(--color-muted)]">Rôle :</span>
+                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+                        {{ user.get_role_display }}
+                    </span>
+                </div>
+                <div>
+                    <span class="text-[var(--color-muted)]">Membre depuis :</span>
+                    <span class="font-medium">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+
+            {% if login_history %}
+                <h3 class="text-lg font-bold mt-6 mb-3">Historique des connexions</h3>
+                <div class="space-y-2 max-h-60 overflow-y-auto">
+                    {% for entry in login_history %}
+                        <div class="text-xs pb-2 border-b border-[var(--color-border)] last:border-0">
+                            <div class="font-medium">{{ entry.logged_in_at|date:"d/m/Y H:i" }}</div>
+                            <div class="text-[var(--color-muted)]">IP : {{ entry.ip_address }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

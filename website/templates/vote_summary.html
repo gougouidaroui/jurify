@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 md:p-12">
+    <a href="{% url 'voting_dashboard' %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour au tableau de vote
+    </a>
+
+    <div class="rounded-box card-accent mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-extrabold">{{ session.nom }}</h1>
+                <p class="text-sm text-[var(--color-muted)]">{{ session.get_filiere_display }}</p>
+            </div>
+            <div class="text-sm">
+                <span class="font-medium">{{ votes_count }}</span> / <span>{{ projets_total }}</span> projets notés
+            </div>
+        </div>
+    </div>
+
+    {% if votes %}
+        <div class="space-y-4">
+            {% for vote in votes %}
+                <div class="rounded-box card-accent">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-bold">{{ vote.projet.title }}</h3>
+                        <span class="text-lg font-bold text-[var(--color-primary)]">{{ vote.score_total }}</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        {% for note in vote.notes.all %}
+                            <div class="p-2 border border-[var(--color-border)] rounded">
+                                <div class="text-[var(--color-muted)] text-xs">{{ note.critere.nom }}</div>
+                                <div class="font-semibold">{{ note.note }} / {{ note.critere.note_max }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if vote.commentaire %}
+                        <div class="mt-3 text-sm text-[var(--color-muted)] italic">
+                            "{{ vote.commentaire }}"
+                        </div>
+                    {% endif %}
+                    <div class="mt-2 text-xs text-[var(--color-muted)]">
+                        Vote du {{ vote.date_vote|date:"d/m/Y H:i" }}
+                        {% if vote.modified_at != vote.date_vote %}
+                            (modifié le {{ vote.modified_at|date:"d/m/Y H:i" }})
+                        {% endif %}
+                    </div>
+                    {% if session.status == 'OPEN' %}
+                        <div class="mt-3">
+                            <a href="{% url 'vote_project' session_pk=session.pk projet_pk=vote.projet.pk %}"
+                               class="text-sm text-[var(--color-accent)] hover:underline">
+                                Modifier ce vote
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-box card-accent text-center py-12">
+            <p class="text-lg text-[var(--color-muted)]">Vous n'avez pas encore voté pour cette session.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

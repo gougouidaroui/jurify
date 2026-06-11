@@ -1,0 +1,85 @@
+{% load static %}
+<nav class="bg-[var(--color-secondary)] p-4 border-b border-[var(--color-border)] flex items-center justify-between shadow-sm">
+    <a href="{% url 'home' %}" class="text-2xl font-extrabold tracking-tight text-[var(--color-primary)]">
+        Jurify
+    </a>
+    <ul class="flex items-center space-x-2">
+        {% if user.is_authenticated %}
+            {% if user.role == 'STUDENT' or user.role == 'ADMIN' %}
+                <li>
+                    <a href="{% url 'project_list' %}" class="px-3 py-2 hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium">
+                        Projets
+                    </a>
+                </li>
+            {% endif %}
+            {% if user.role == 'ADMIN' %}
+                <li>
+                    <a href="{% url 'session_list' %}" class="px-3 py-2 hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium">
+                        Sessions
+                    </a>
+                </li>
+            {% endif %}
+            {% if user.role == 'JURY' or user.role == 'PRESIDENT_JURY' %}
+                <li>
+                    <a href="{% url 'session_list' %}" class="px-3 py-2 hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium">
+                        Voter
+                    </a>
+                </li>
+            {% endif %}
+            <li>
+                <a href="{% url 'results_public' %}" class="px-3 py-2 hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium">
+                    Résultats
+                </a>
+            </li>
+            <li>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-[var(--color-primary)] text-[var(--color-on-primary)]">
+                    {{ user.get_role_display }}
+                </span>
+            </li>
+            <li class="relative">
+                <a href="{% url 'notifications' %}" class="p-2 hover:bg-[var(--color-border)] rounded-lg transition-colors inline-flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    {% if unread_notifications_count > 0 %}
+                        <span class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {{ unread_notifications_count }}
+                        </span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'profile' %}" class="px-3 py-2 hover:bg-[var(--color-border)] rounded-lg transition-colors font-medium">
+                    {{ user.get_full_name|default:user.email }}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'logout' %}" class="px-3 py-2 text-[var(--color-destructive)] hover:bg-red-50 rounded-lg transition-colors font-medium">
+                    Déconnexion
+                </a>
+            </li>
+        {% endif %}
+        <li>
+            <button onclick="toggleTheme()" id="theme-toggle" class="p-2 bg-[var(--color-secondary)] rounded-full shadow border border-[var(--color-border)] text-[var(--color-foreground)] ml-2">
+                <span id="theme-icon-sun" class="hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </span>
+                <span id="theme-icon-moon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </span>
+            </button>
+        </li>
+    </ul>
+</nav>

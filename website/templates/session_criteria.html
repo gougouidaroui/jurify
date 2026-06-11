@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 md:p-12">
+    <a href="{% url 'session_detail' pk=session.pk %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour à la session
+    </a>
+
+    <div class="card-drip shadow-xl w-full max-w-2xl">
+        <div class="card-drip-header">
+            <h1 class="text-2xl font-extrabold text-center">Configurer les critères</h1>
+            <p class="text-center text-sm opacity-90">
+                Session : <strong>{{ session.nom }}</strong>
+            </p>
+        </div>
+        <div class="card-drip-body">
+            <p class="text-sm text-[var(--color-muted)] mb-6">
+                La somme des poids doit être égale à <strong>100%</strong>.
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                {% if formset.non_form_errors %}
+                    <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+                        {% for error in formset.non_form_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div id="criteria-forms">
+                    {% for form in formset %}
+                        <div class="criteria-row p-4 mb-4 border border-[var(--color-border)] rounded-lg">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1">Nom</label>
+                                    {{ form.nom }}
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1">Poids (%)</label>
+                                    {{ form.poids }}
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold mb-1">Note max</label>
+                                    {{ form.note_max }}
+                                </div>
+                            </div>
+                            {% if formset.can_delete %}
+                                <div class="mt-2">
+                                    <label class="text-xs text-red-500 cursor-pointer">
+                                        {{ form.DELETE }} Supprimer ce critère
+                                    </label>
+                                </div>
+                            {% endif %}
+                            {% if form.nom.errors or form.poids.errors or form.note_max.errors %}
+                                <div class="text-red-500 text-xs mt-1">
+                                    {{ form.nom.errors }} {{ form.poids.errors }} {{ form.note_max.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-criteria"
+                        class="w-full mb-4 px-4 py-2 border border-dashed border-[var(--color-border)] rounded-xl text-sm font-medium hover:bg-[var(--color-secondary)] transition-colors btn-pop">
+                    + Ajouter un critère
+                </button>
+
+                <button type="submit"
+                        class="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                    Enregistrer les critères
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addBtn = document.getElementById('add-criteria');
+        const container = document.getElementById('criteria-forms');
+        const totalForms = document.querySelector('[name="form-TOTAL_FORMS"]');
+
+        addBtn.addEventListener('click', function() {
+            const formCount = container.children.length;
+            const template = container.children[0].cloneNode(true);
+
+            template.innerHTML = template.innerHTML.replace(/form-(\d+)-/g, `form-${formCount}-`);
+            template.innerHTML = template.innerHTML.replace(/form_(\d+)_/g, `form_${formCount}_`);
+            template.querySelectorAll('input').forEach(input => input.value = '');
+            template.querySelectorAll('[type="checkbox"]').forEach(cb => cb.checked = false);
+
+            container.appendChild(template);
+            totalForms.value = formCount + 1;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<main class="max-w-5xl mx-auto p-6 md:p-12">
+    <div class="text-center mb-12">
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4">
+            <span class="text-[var(--color-primary)]">Jurify</span>
+        </h1>
+        <p class="text-xl text-[var(--color-muted)] font-light">
+            Vote, Evaluate, Rank.
+        </p>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
+            {% if user.role == 'ADMIN' %}
+                <a href="{% url 'project_list' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">📋 Gérer les projets</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Valider, rejeter et attribuer les projets.</p>
+                </a>
+                <a href="{% url 'session_list' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">🗳️ Sessions de vote</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Créer et configurer les sessions.</p>
+                </a>
+                <a href="{% url 'admin:index' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">🗄️ Base de données</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Gérer toutes les entités (utilisateurs, projets, sessions, votes, etc.).</p>
+                </a>
+            {% elif user.role == 'JURY' or user.role == 'PRESIDENT_JURY' %}
+                <a href="{% url 'voting_dashboard' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">✏️ Voter</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Accéder aux sessions actives pour voter.</p>
+                </a>
+                <a href="{% url 'results_public' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">📊 Résultats</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Consulter les résultats publiés.</p>
+                </a>
+            {% elif user.role == 'STUDENT' %}
+                <a href="{% url 'project_create' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">📄 Soumettre un projet</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Déposer votre projet PFA.</p>
+                </a>
+                <a href="{% url 'project_list' %}" class="rounded-box card-accent card-lift hover:shadow-lg transition-shadow block">
+                    <h3 class="text-xl font-bold mb-2">📋 Mes projets</h3>
+                    <p class="text-sm text-[var(--color-muted)]">Consulter et modifier vos projets.</p>
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="max-w-lg mx-auto mt-8">
+            <div class="rounded-box text-center">
+                <h2 class="text-2xl font-bold mb-4">Bienvenue sur Jurify</h2>
+                <p class="text-[var(--color-muted)] mb-6">
+                    Plateforme de gestion et d'évaluation des Projets de Fin d'Année.
+                </p>
+                <div class="flex gap-4 justify-center">
+                    <a href="{% url 'login' %}" class="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                        Connexion
+                    </a>
+                    <a href="{% url 'register' %}" class="border border-[var(--color-border)] px-6 py-3 rounded-xl font-bold hover:bg-[var(--color-secondary)] transition-colors btn-pop">
+                        Inscription
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 md:p-12">
+    <a href="{% url 'session_results' pk=session.pk %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour aux résultats
+    </a>
+
+    <div class="card-drip shadow-xl w-full max-w-4xl">
+        <div class="card-drip-body">
+        <h1 class="text-2xl font-extrabold mb-2">Publier les résultats</h1>
+        <p class="text-lg font-bold mb-4">{{ session.nom }}</p>
+
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 text-sm">
+            <p class="font-semibold text-blue-800">ℹ️ Action de publication</p>
+            <p class="text-blue-700 mt-1">
+                La publication rendra les résultats visibles par tous les acteurs (étudiants, invités).
+                Cette action est irréversible.
+            </p>
+        </div>
+
+        {% if resultats %}
+            <h2 class="text-lg font-bold mb-3">Aperçu du classement</h2>
+            <div class="space-y-1 mb-6">
+                {% for r in resultats|slice:":5" %}
+                    <div class="flex items-center justify-between p-2 border border-[var(--color-border)] rounded text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold {% if r.rang == 1 %}text-yellow-600{% endif %}">#{{ r.rang }}</span>
+                            <span>{{ r.projet.title }}</span>
+                        </div>
+                        <span class="font-semibold">{{ r.score_final }}</span>
+                    </div>
+                {% endfor %}
+                {% if resultats.count > 5 %}
+                    <p class="text-xs text-[var(--color-muted)]">...et {{ resultats.count|add:"-5" }} autre(s)</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                    Confirmer la publication
+                </button>
+                <a href="{% url 'session_results' pk=session.pk %}"
+                   class="px-6 py-3 border border-[var(--color-border)] rounded-xl font-bold hover:bg-[var(--color-secondary)] transition-colors">
+                    Annuler
+                </a>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

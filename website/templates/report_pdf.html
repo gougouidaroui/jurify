@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport — {{ session.nom }}</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 12px; color: #1e293b; line-height: 1.5; }
+        h1 { font-size: 22px; color: #e11d48; margin-bottom: 4px; }
+        h2 { font-size: 16px; color: #475569; margin-top: 24px; margin-bottom: 8px; border-bottom: 2px solid #e11d48; padding-bottom: 4px; }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 3px solid #e11d48; }
+        .header p { margin: 2px 0; color: #64748b; font-size: 11px; }
+        .meta { margin-bottom: 20px; }
+        .meta table { width: 100%; border-collapse: collapse; }
+        .meta td { padding: 3px 8px; font-size: 11px; }
+        .meta td:first-child { font-weight: 600; width: 140px; color: #475569; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th { background: #e11d48; color: white; padding: 8px 10px; text-align: left; font-size: 11px; }
+        td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
+        tr:nth-child(even) td { background: #f8fafc; }
+        .rang-1 { background: #fef3c7 !important; font-weight: 700; }
+        .rang-2 { background: #f1f5f9 !important; }
+        .rang-3 { background: #ffedd5 !important; }
+        .score { text-align: center; font-weight: 600; }
+        .footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #94a3b8; text-align: center; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Jurify</h1>
+        <p style="font-size: 14px; color: #1e293b;">Rapport d'évaluation — {{ session.nom }}</p>
+        <p>Vote, Evaluate, Rank.</p>
+    </div>
+
+    <div class="meta">
+        <table>
+            <tr><td>Session</td><td>{{ session.nom }}</td></tr>
+            <tr><td>Filière</td><td>{{ session.get_filiere_display }}</td></tr>
+            <tr><td>Période</td><td>{{ session.date_debut|date:"d/m/Y H:i" }} — {{ session.date_fin|date:"d/m/Y H:i" }}</td></tr>
+            <tr><td>Jurys</td><td>{% for j in session.jury.all %}{{ j.get_full_name|default:j.email }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>
+            <tr><td>Statut</td><td>{{ session.get_status_display }}</td></tr>
+            <tr><td>Généré le</td><td>{{ generated_at|date:"d/m/Y H:i" }}</td></tr>
+            <tr><td>Généré par</td><td>{{ generated_by }}</td></tr>
+        </table>
+    </div>
+
+    <h2>Classement final</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px; text-align: center;">Rang</th>
+                <th>Projet</th>
+                <th>Étudiant</th>
+                <th style="width: 100px; text-align: center;">Score final</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resultats %}
+            <tr class="rang-{{ r.rang }}">
+                <td style="text-align: center; font-weight: 700;">#{{ r.rang }}</td>
+                <td>{{ r.projet.title }}</td>
+                <td>{{ r.projet.student.get_full_name|default:r.projet.student.email }}</td>
+                <td class="score">{{ r.score_final }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Critères d'évaluation</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Critère</th>
+                <th style="width: 80px; text-align: center;">Poids</th>
+                <th style="width: 100px; text-align: center;">Note max</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in session.criteres.all %}
+            <tr>
+                <td>{{ c.nom }}</td>
+                <td style="text-align: center;">{{ c.poids }}%</td>
+                <td style="text-align: center;">{{ c.note_max }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td><strong>Total</strong></td>
+                <td style="text-align: center;"><strong>{{ session.poids_total }}%</strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Détail des votes par jury</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Projet</th>
+                <th>Jury</th>
+                {% for c in session.criteres.all %}
+                    <th style="text-align: center;">{{ c.nom }}</th>
+                {% endfor %}
+                <th style="text-align: center; width: 80px;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vote in votes_details %}
+            <tr>
+                <td>{{ vote.projet.title }}</td>
+                <td>{{ vote.jury.get_full_name|default:vote.jury.email }}</td>
+                {% for c in session.criteres.all %}
+                    <td style="text-align: center;">
+                        {% for note in vote.notes.all %}
+                            {% if note.critere_id == c.pk %}{{ note.note }}{% endif %}
+                        {% endfor %}
+                    </td>
+                {% endfor %}
+                <td style="text-align: center; font-weight: 600;">{{ vote.score_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Jurify — Plateforme Intelligente de Gestion et d'Évaluation des Projets de Fin d'Année</p>
+        <p>EMSI Rabat — Filière {{ session.get_filiere_display }}</p>
+    </div>
+</body>
+</html>

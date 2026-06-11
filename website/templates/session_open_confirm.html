@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 md:p-12">
+    <a href="{% url 'session_detail' pk=session.pk %}" class="text-[var(--color-accent)] hover:underline text-sm mb-4 inline-block">
+        ← Retour à la session
+    </a>
+
+    <div class="card-drip shadow-xl w-full max-w-xl text-center">
+        <div class="card-drip-body">
+        <h1 class="text-2xl font-extrabold mb-4">Ouvrir la session</h1>
+        <p class="text-xl font-bold mb-2">{{ session.nom }}</p>
+        <p class="text-sm text-[var(--color-muted)] mb-2">
+            Une fois ouverte, les membres du jury pourront voter sur les projets.
+        </p>
+
+        <div class="grid grid-cols-3 gap-4 my-6 text-sm">
+            <div class="p-3 border border-[var(--color-border)] rounded-lg">
+                <div class="font-bold text-lg">{{ session.criteres.count }}</div>
+                <div class="text-[var(--color-muted)]">Critères</div>
+            </div>
+            <div class="p-3 border border-[var(--color-border)] rounded-lg">
+                <div class="font-bold text-lg">{{ session.jury.count }}</div>
+                <div class="text-[var(--color-muted)]">Jurys</div>
+            </div>
+            <div class="p-3 border border-[var(--color-border)] rounded-lg">
+                <div class="font-bold text-lg">{{ session.projets.count }}</div>
+                <div class="text-[var(--color-muted)]">Projets</div>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-6">
+                <label class="flex items-center justify-center gap-2 cursor-pointer">
+                    {{ form.confirm }}
+                    <span class="text-sm font-medium">{{ form.confirm.label }}</span>
+                </label>
+                {% if form.confirm.errors %}
+                    <div class="text-red-500 text-xs mt-1">{{ form.confirm.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            <button type="submit"
+                    class="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity btn-pop">
+                Confirmer l'ouverture
+            </button>
+        </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
